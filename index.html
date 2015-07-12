@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!-->  
+<html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+	<title>Data Manipulation with R</title>
+	<meta name="description" content="Data Manipulation with R">
+	<meta name="author" content="Kaushik Roy Chowdhury">
+	<meta name="generator" content="slidify" />
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=1024, user-scalable=no">
+	
+	<!-- Required stylesheet -->
+	<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/core/deck.core.css">
+	<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/goto/deck.goto.css">
+<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/hash/deck.hash.css">
+<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/menu/deck.menu.css">
+<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/navigation/deck.navigation.css">
+<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/scale/deck.scale.css">
+<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/status/deck.status.css">
+<!-- Style theme. More available in /themes/style/  -->
+	<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/themes/style/swiss.css">
+	
+	<!-- Transition theme. More available in /themes/transition/  -->
+	<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/themes/transition/horizontal-slide.css">
+	<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/modernizr.custom.js"></script>
+	
+	<!-- LOAD STYLE SHEETS -->
+	<link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/highlighters/highlight.js/css/googlecode.css">
+	
+	  <link rel="stylesheet" href = "assets/css/ribbons.css">
+
+</head>
+
+<body class="deck-container">
+
+  <!-- Begin slides -->
+  <section class="slide " id="slide-1">
+  
+  <style>
+code {
+fontsize: 12pt;
+}
+pre {
+font-size: -1em;
+}
+</style>
+
+<h1>Import data into R</h1>
+
+</section>
+<section class="slide " id="slide-2">
+  <h2>Importing data into R</h2>
+  <p>Conforming to its&#39; philosophy of freedom (of choice), reading data into R can be performed in various ways. </p>
+
+<h3>Reading data with Base R functions</h3>
+
+<ul>
+<li>Widely used functions for reading data into R</li>
+<li>Available with base R distribution</li>
+<li>No packages required</li>
+<li>Can be slow and take up surprising amount of memory when reading large files</li>
+<li><code>read.table()</code> and family</li>
+</ul>
+
+<p><strong>Usage</strong>: <code>read.table(file, header = FALSE, sep = &quot;&quot;, colClasses = NA, stringsAsFactors = TRUE, ...)</code></p>
+
+</section>
+<section class="slide " id="slide-3">
+  <h2>Is there a fast and efficient way to read-in data?</h2>
+  <ul>
+<li><code>data.table()</code> package provides an alternative.</li>
+<li><code>fread()</code> <em>fast file reader function</em> is a fast and efficient way to read in data into R</li>
+</ul>
+
+<p><strong>Usage</strong>: <code>fread(input, ...)</code> where <code>...</code> takes in same arguments as that of <code>read.table</code>.</p>
+
+</section>
+<section class="slide " id="slide-4">
+  <h2>Timing <code>read.table()</code> and <code>fread()</code> with a 20MB .csv file</h2>
+  <p>The file <code>flights.csv</code> can be downloaded from <a href="http://bit.ly/1L4IFxB">here</a></p>
+
+<pre><code class="r"># install packages if not present
+#install.packages(c(&quot;data.table&quot;, &quot;rbenchmark&quot;)) 
+
+# load install packages
+library(data.table); library(rbenchmark)
+
+# file saved in windows default directory (~ = C:/Users/.../Documents)
+read_base &lt;- function(x) raw &lt;- read.csv(&quot;~/flights.csv&quot;)
+read_DT   &lt;- function(x) rawDT &lt;&lt;- fread(&quot;~/flights.csv&quot;)
+
+# reading a 20MB .csv file
+benchmark(read_base(), read_DT(), replications = 1,
+  columns = c(&quot;test&quot;, &quot;elapsed&quot;)) 
+</code></pre>
+
+<pre><code>##          test elapsed
+## 1 read_base()    3.12
+## 2   read_DT()    0.28
+</code></pre>
+
+<p><code>fread()</code> is almost 5x as fast as <code>read.csv()</code></p>
+
+</section>
+<section class="slide " id="slide-5">
+  <h2>A look at the data</h2>
+  <p>Having read the <code>flights.csv</code> data into R using <code>fread()</code> function, here are the first few rows</p>
+
+<pre><code>##    year month day dep_time dep_delay arr_time arr_delay carrier tailnum
+## 1: 2013     1   1      517         2      830        11      UA  N14228
+## 2: 2013     1   1      533         4      850        20      UA  N24211
+## 3: 2013     1   1      542         2      923        33      AA  N619AA
+## 4: 2013     1   1      544        -1     1004       -18      B6  N804JB
+## 5: 2013     1   1      554        -6      812       -25      DL  N668DN
+## 6: 2013     1   1      554        -4      740        12      UA  N39463
+##    flight origin dest air_time distance hour minute
+## 1:   1545    EWR  IAH      227     1400    5     17
+## 2:   1714    LGA  IAH      227     1416    5     33
+## 3:   1141    JFK  MIA      160     1089    5     42
+## 4:    725    JFK  BQN      183     1576    5     44
+## 5:    461    LGA  ATL      116      762    5     54
+## 6:   1696    EWR  ORD      150      719    5     54
+</code></pre>
+
+<p>The data contains flights information of all planes that departed NYC (i.e. JFK, LGA or EWR airports) in 2013.</p>
+
+<p><strong>Data Source</strong>: <a href="http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236">RITA, Bureau of transportation statistics</a></p>
+
+</section>
+<section class="slide " id="slide-6">
+  <h1>Data step of <code>data.table()</code></h1>
+  
+</section>
+<section class="slide " id="slide-7">
+  <h2>Deep-dive into <code>data.table()</code> package</h2>
+  <p><code>data.table()</code> provides <strong>faster</strong> and <strong>efficient</strong> manipulation of data stored in RAM</p>
+
+<p>Perform the following operations:</p>
+
+<ul>
+<li>Filtering relevant data/rows</li>
+<li>Creating new variables, modify/delete columns</li>
+<li>Group by operations</li>
+<li>Summarize data</li>
+<li>Ordered joins</li>
+<li>Transpose data</li>
+</ul>
+
+<p><strong>General form:</strong></p>
+
+<blockquote>
+<p><code>DT[i, j, by]</code>: Take DT, subset rows using <code>i</code>, calculate <code>j</code> grouped by <code>by</code></p>
+</blockquote>
+
+</section>
+<section class="slide " id="slide-8">
+  <h1>Filter/Subset</h1>
+  
+</section>
+<section class="slide " id="slide-9">
+  <h2>Filtering data</h2>
+  <p><code>DT[i, j, by]</code>: Take DT, subset rows using <code>i</code>,<span style="opacity: 0.15;"> calculate <code>j</code>, grouped by <code>by</code> </span></p>
+
+<p>Rows can be filtered using column names satisfying conditions</p>
+
+<ul>
+<li>Select all flights departing from JFK airport and has a departure delay of more than 30 minutes</li>
+</ul>
+
+<pre><code class="r">head(rawDT[origin == &quot;JFK&quot; &amp; dep_delay &gt; 30])
+</code></pre>
+
+<pre><code>##    year month day dep_time dep_delay arr_time arr_delay carrier tailnum
+## 1: 2013     1   1      826        71     1136        51      AA  N3GVAA
+## 2: 2013     1   1      848       853     1001       851      MQ  N942MQ
+## 3: 2013     1   1      909        59     1331        16      AA  N5EXAA
+## 4: 2013     1   1     1337        77     1649        78      B6  N636JB
+## 5: 2013     1   1     1428        59     1803        83      B6  N635JB
+## 6: 2013     1   1     1515        38     1834        52      B6  N178JB
+##    flight origin dest air_time distance hour minute
+## 1:    443    JFK  MIA      160     1089    8     26
+## 2:   3944    JFK  BWI       41      184    8     48
+## 3:    655    JFK  STT      184     1623    9      9
+## 4:    673    JFK  LAX      352     2475   13     37
+## 5:    355    JFK  BUR      371     2465   14     28
+## 6:    347    JFK  SRQ      171     1041   15     15
+</code></pre>
+
+</section>
+<section class="slide " id="slide-10">
+  <h1>Manipulating columns (adding/updating)</h1>
+  
+</section>
+<section class="slide " id="slide-11">
+  <h2>Create new variables (standalone)</h2>
+  <p><code>DT[i, j, by]</code>: Take DT, <span style="opacity: 0.2;"> subset rows using <code>i</code>, </span> calculate <code>j</code> <span style="opacity: 0.2;"> grouped by <code>by</code> </span></p>
+
+<p>New variables can be created in the <code>j</code> argument of data table operation</p>
+
+<ul>
+<li>Calculate air speed for each flight (= distance/air_time)</li>
+</ul>
+
+<pre><code class="r">head(rawDT[, .(air_speed = distance/air_time)])
+</code></pre>
+
+<pre><code>##    air_speed
+## 1:  6.167401
+## 2:  6.237885
+## 3:  6.806250
+## 4:  8.612022
+## 5:  6.568966
+## 6:  4.793333
+</code></pre>
+
+<ul>
+<li><code>.()</code> is an alias for <code>list()</code> to perform multiple operations separated by &#39;,&#39;</li>
+<li>If <code>.()</code> is not used, the result is a vector, else the result is a <code>data.table</code></li>
+</ul>
+
+</section>
+<section class="slide " id="slide-12">
+  <h2>Adding new variables to <code>data.table</code></h2>
+  <p>To add the <code>air_speed</code> variable in the <code>rawDT data.table</code>, use <code>:=</code> operator</p>
+
+<pre><code class="r">head(rawDT[, air_speed := distance/air_time])
+</code></pre>
+
+<pre><code>##    year month day dep_time dep_delay arr_time arr_delay carrier tailnum
+## 1: 2013     1   1      517         2      830        11      UA  N14228
+## 2: 2013     1   1      533         4      850        20      UA  N24211
+## 3: 2013     1   1      542         2      923        33      AA  N619AA
+## 4: 2013     1   1      544        -1     1004       -18      B6  N804JB
+## 5: 2013     1   1      554        -6      812       -25      DL  N668DN
+## 6: 2013     1   1      554        -4      740        12      UA  N39463
+##    flight origin dest air_time distance hour minute air_speed
+## 1:   1545    EWR  IAH      227     1400    5     17  6.167401
+## 2:   1714    LGA  IAH      227     1416    5     33  6.237885
+## 3:   1141    JFK  MIA      160     1089    5     42  6.806250
+## 4:    725    JFK  BQN      183     1576    5     44  8.612022
+## 5:    461    LGA  ATL      116      762    5     54  6.568966
+## 6:   1696    EWR  ORD      150      719    5     54  4.793333
+</code></pre>
+
+</section>
+<section class="slide " id="slide-13">
+  <h2>Adding multiple new variables to <code>data.table</code></h2>
+  <ul>
+<li>To add multiple variables, <code>air_speed</code> and <code>total_delay (=dep_delay + arr_delay)</code> use a chained operation</li>
+<li>Chaining operations improves readability and avoids intermediate assignments</li>
+</ul>
+
+<pre><code class="r"># in rawDT[, create var1][, create var2][print rows 1:3]
+rawDT[, air_speed := distance/air_time][, total_delay := dep_delay + arr_delay][1:3]
+</code></pre>
+
+<pre><code>##    year month day dep_time dep_delay arr_time arr_delay carrier tailnum
+## 1: 2013     1   1      517         2      830        11      UA  N14228
+## 2: 2013     1   1      533         4      850        20      UA  N24211
+## 3: 2013     1   1      542         2      923        33      AA  N619AA
+##    flight origin dest air_time distance hour minute air_speed total_delay
+## 1:   1545    EWR  IAH      227     1400    5     17  6.167401          13
+## 2:   1714    LGA  IAH      227     1416    5     33  6.237885          24
+## 3:   1141    JFK  MIA      160     1089    5     42  6.806250          35
+</code></pre>
+
+</section>
+<section class="slide " id="slide-14">
+  <h1>Group by operations</h1>
+  
+</section>
+<section class="slide " id="slide-15">
+  <h2>Grouped Operations</h2>
+  <p><code>DT[i, j, by]</code>: Take DT, <span style="opacity: 0.2;"> subset rows using <code>i</code>, calculate <code>j</code> </span> grouped by <code>by</code></p>
+
+<ul>
+<li>Calculate the average air speed for each carrier</li>
+<li>This can be achieved by calculating the air speed variable and take an average across all flights <strong>grouped by</strong> carrier</li>
+<li>Make <code>na.rm = TRUE</code> which removes the <code>NA</code> (missing values) from the data when calculating the <code>mean</code></li>
+</ul>
+
+<pre><code class="r"># calculate average air speed by carrier and print rows 1 to 5
+rawDT[, .(avg_air_speed = mean(distance/air_time, na.rm = TRUE)), by = carrier][1:5]
+</code></pre>
+
+<pre><code>##    carrier avg_air_speed
+## 1:      UA      7.014730
+## 2:      AA      6.957879
+## 3:      B6      6.666191
+## 4:      DL      6.974380
+## 5:      EV      6.049060
+</code></pre>
+
+</section>
+<section class="slide " id="slide-16">
+  <h1>Summarize</h1>
+  
+</section>
+<section class="slide " id="slide-17">
+  <h2>Data summary</h2>
+  <p>Summarize data using necessary arguments of <code>i</code>, <code>j</code> and <code>by</code> of <code>data.table</code></p>
+
+<p><strong>Examples:</strong></p>
+
+<ul>
+<li>Calculate daily count of all flights departing from JFK airport (<code>origin == &quot;JFK</code>)</li>
+<li>For all flights flying out of JFK airport (<code>origin == &quot;JFK</code>), find the carrier  with maximum average departure delay </li>
+<li>In which month of the year does flights departing from JFK airport has the maximum departure delay?</li>
+</ul>
+
+</section>
+<section class="slide " id="slide-18">
+  <h3>Daily count of flights departing from JFK airport</h3>
+  <pre><code class="r">head(rawDT[origin == &quot;JFK&quot;, .N, by = day])
+</code></pre>
+
+<pre><code>##    day    N
+## 1:   1 3663
+## 2:   2 3661
+## 3:   3 3696
+## 4:   4 3638
+## 5:   5 3608
+## 6:   6 3640
+</code></pre>
+
+</section>
+<section class="slide " id="slide-19">
+  <h3>Carrier with maximum average departure delay for flights departing from JFK airport</h3>
+  <pre><code class="r">head(rawDT[origin == &quot;JFK&quot;, .(avg_dep_delay = mean(dep_delay, na.rm = TRUE)), by = carrier][order(-avg_dep_delay)])
+</code></pre>
+
+<pre><code>##    carrier avg_dep_delay
+## 1:      9E      19.00152
+## 2:      EV      18.52036
+## 3:      VX      13.27944
+## 4:      MQ      13.19997
+## 5:      B6      12.75745
+## 6:      AA      10.30216
+</code></pre>
+
+</section>
+<section class="slide " id="slide-20">
+  <h3>Month with maximum average departure delay for flights departing from JFK airport</h3>
+  <pre><code class="r">smryDT &lt;- rawDT[origin == &quot;JFK&quot;, .(avg_dep_delay = mean(dep_delay, na.rm = TRUE)), by = month]
+
+# setorder works much faster than base::order from previous example
+setorder(smryDT, -avg_dep_delay)
+head(smryDT)
+</code></pre>
+
+<pre><code>##    month avg_dep_delay
+## 1:     7      23.76926
+## 2:     6      20.49973
+## 3:    12      14.78835
+## 4:     8      12.91436
+## 5:     5      12.51943
+## 6:     4      12.24906
+</code></pre>
+
+</section>
+<section class="slide " id="slide-21">
+  <h1>Join/Merge</h1>
+  
+</section>
+<section class="slide " id="slide-22">
+  <h2>Ordered Joins</h2>
+  <p>Joins in <code>data.table</code> are performed using <code>merge.data.table()</code> function. However, <code>data.tables</code> need to be sorted by <code>key(s)</code> which are established using <code>setkey()</code> for an existing <code>data.table</code> or <code>key</code> argument while creating one</p>
+
+<ul>
+<li>Create two <code>data.tables</code> with same <code>key</code> value to join</li>
+</ul>
+
+<pre><code class="r">dt1 &lt;- data.table(A = letters[1:10], X = 1:10, key = &quot;A&quot;); head(dt1)
+</code></pre>
+
+<pre><code>##    A X
+## 1: a 1
+## 2: b 2
+## 3: c 3
+## 4: d 4
+## 5: e 5
+## 6: f 6
+</code></pre>
+
+<pre><code class="r">dt2 &lt;- data.table(A = letters[5:14], Y = 1:10, key = &quot;A&quot;); head(dt2)
+</code></pre>
+
+<pre><code>##    A Y
+## 1: e 1
+## 2: f 2
+## 3: g 3
+## 4: h 4
+## 5: i 5
+## 6: j 6
+</code></pre>
+
+</section>
+<section class="slide " id="slide-23">
+  <h3>Left Outer Join</h3>
+  <pre><code class="r"># left outer join
+merge.data.frame(x = dt1, y = dt2, all.x=TRUE)
+</code></pre>
+
+<pre><code>##    A  X  Y
+## 1  a  1 NA
+## 2  b  2 NA
+## 3  c  3 NA
+## 4  d  4 NA
+## 5  e  5  1
+## 6  f  6  2
+## 7  g  7  3
+## 8  h  8  4
+## 9  i  9  5
+## 10 j 10  6
+</code></pre>
+
+</section>
+<section class="slide " id="slide-24">
+  <h3>Right Inner Join</h3>
+  <pre><code class="r"># right inner join
+merge.data.frame(x = dt2, y = dt1, all.x=FALSE)
+</code></pre>
+
+<pre><code>##   A Y  X
+## 1 e 1  5
+## 2 f 2  6
+## 3 g 3  7
+## 4 h 4  8
+## 5 i 5  9
+## 6 j 6 10
+</code></pre>
+
+</section>
+<section class="slide " id="slide-25">
+  <h3>Full Outer Join</h3>
+  <pre><code class="r"># full outer join
+merge.data.frame(x = dt1, y = dt2, all = TRUE)
+</code></pre>
+
+<pre><code>##    A  X  Y
+## 1  a  1 NA
+## 2  b  2 NA
+## 3  c  3 NA
+## 4  d  4 NA
+## 5  e  5  1
+## 6  f  6  2
+## 7  g  7  3
+## 8  h  8  4
+## 9  i  9  5
+## 10 j 10  6
+## 11 k NA  7
+## 12 l NA  8
+## 13 m NA  9
+## 14 n NA 10
+</code></pre>
+
+</section>
+<section class="slide " id="slide-26">
+  <h1>Transposing data</h1>
+  
+</section>
+<section class="slide " id="slide-27">
+  <h2>Reshaping data <code>melt</code></h2>
+  <p><code>data.tables</code> can be reshaped using the <code>melt</code> and <code>dcast</code> functions:</p>
+
+<ul>
+<li><strong><code>melt</code></strong>: Wide-to-long (melting)</li>
+</ul>
+
+<p><strong>Usage</strong>: <code>melt(data, id.vars, measure.vars, variable.name = &quot;variable&quot;, value.name = &quot;value&quot;, ...)</code> </p>
+
+<p>where,</p>
+
+<p><code>data</code> A <code>data.table</code> to melt</p>
+
+<p><code>id.vars</code> vector of id variables; if missing, all non-id columns are assigned</p>
+
+<p><code>measure.vars</code> vector of measure variables; if missing, all non-id columns are assigned</p>
+
+<p><code>variable.name</code> name for the measured variable names column</p>
+
+<p><code>value.name</code> name for the molten data values column</p>
+
+<p><code>...</code> advanced argument for <code>melt</code> functions</p>
+
+</section>
+<section class="slide " id="slide-28">
+  <h3>Example</h3>
+  <p>Create the data to melt</p>
+
+<pre><code class="r">library(reshape2)
+DT &lt;- data.table(
+      i1 = c(1:3, NA), 
+      i2 = c(5, 6, 7, 8), 
+      f1 = c(&quot;A&quot;, &quot;C&quot;, &quot;D&quot;, &quot;Q&quot;), 
+      c1 = c(&quot;XY&quot;, &quot;FE&quot;, &quot;AA&quot;, &quot;GG&quot;))
+DT
+</code></pre>
+
+<pre><code>##    i1 i2 f1 c1
+## 1:  1  5  A XY
+## 2:  2  6  C FE
+## 3:  3  7  D AA
+## 4: NA  8  Q GG
+</code></pre>
+
+</section>
+<section class="slide " id="slide-29">
+  <h3>Melt the data</h3>
+  <pre><code class="r">(DT.melt1 &lt;- melt(DT, id = c(&quot;i1&quot;, &quot;i2&quot;), measure = c(&quot;f1&quot;, &quot;c1&quot;)))
+</code></pre>
+
+<pre><code>##    i1 i2 variable value
+## 1:  1  5       f1     A
+## 2:  2  6       f1     C
+## 3:  3  7       f1     D
+## 4: NA  8       f1     Q
+## 5:  1  5       c1    XY
+## 6:  2  6       c1    FE
+## 7:  3  7       c1    AA
+## 8: NA  8       c1    GG
+</code></pre>
+
+<pre><code class="r">#rename variable and value columns
+(DT.melt2 &lt;- melt(DT, id = c(&quot;i1&quot;, &quot;i2&quot;), measure = c(&quot;f1&quot;, &quot;c1&quot;), variable.name = &quot;Factors&quot;, value.name = &quot;data_value&quot;))
+</code></pre>
+
+<pre><code>##    i1 i2 Factors data_value
+## 1:  1  5      f1          A
+## 2:  2  6      f1          C
+## 3:  3  7      f1          D
+## 4: NA  8      f1          Q
+## 5:  1  5      c1         XY
+## 6:  2  6      c1         FE
+## 7:  3  7      c1         AA
+## 8: NA  8      c1         GG
+</code></pre>
+
+</section>
+<section class="slide " id="slide-30">
+  <h2>Reshaping data <code>dcast</code></h2>
+  <ul>
+<li><strong><code>dcast.data.table</code></strong>: Long-to-wide (casting)</li>
+</ul>
+
+<p><strong>Usage</strong>: <code>dcast.data.table(data, formula, fun.aggregate = NULL, ...)</code> </p>
+
+<p>where,</p>
+
+<p><code>data</code> A molten data.table</p>
+
+<p><code>formula</code> A formula of the form LHS ~ RHS to cast, eg: var1 + var2 ~ var3. The first varies slowest, and the last fastest.  &quot;...&quot; represents all other variables not used in the formula and &quot;.&quot; represents no variable</p>
+
+<p><code>fun.aggregate</code> Aggregation function needed if variables do not identify a single observation for each output cell</p>
+
+<p><code>...</code> other advanced arguments</p>
+
+</section>
+<section class="slide " id="slide-31">
+  <h3><code>dcast</code> the molten <code>data.table</code></h3>
+  <pre><code class="r">(DT.dcast &lt;- dcast.data.table(DT.melt2, i1+i2~Factors))
+</code></pre>
+
+<pre><code>## Using &#39;data_value&#39; as value column. Use &#39;value.var&#39; to override
+</code></pre>
+
+<pre><code>##    i1 i2 f1 c1
+## 1: NA  8  Q GG
+## 2:  1  5  A XY
+## 3:  2  6  C FE
+## 4:  3  7  D AA
+</code></pre>
+
+</section>
+</body>
+  <!-- deck.navigation snippet -->
+  <a href="#" class="deck-prev-link" title="Previous">&#8592;</a>
+  <a href="#" class="deck-next-link" title="Next">&#8594;</a>
+  
+  <!-- deck.status snippet -->
+  <p class="deck-status">
+  <span class="deck-status-current"></span>
+    /
+  <span class="deck-status-total"></span>
+  </p>
+  
+  <!-- deck.goto snippet -->
+  <form action="." method="get" class="goto-form">
+  	<label for="goto-slide">Go to slide:</label>
+  	<input type="text" name="slidenum" id="goto-slide" list="goto-datalist">
+  	<datalist id="goto-datalist"></datalist>
+  	<input type="submit" value="Go">
+  </form>
+  
+  <!-- deck.hash snippet -->
+  <a href="." title="Permalink to this slide" class="deck-permalink">#</a>
+  
+  
+  <!-- Grab CDN jQuery, with a protocol relative URL; fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/jquery-1.7.min.js"><\/script>')</script>
+  
+  <!-- Add Slide Class to Build Elements -->
+  <script type='text/javascript'>
+  $('ol.build li').addClass('slide')
+  $('ul.build li').addClass('slide')
+  </script>
+  
+  <!-- Deck Core and extensions -->
+  <script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/core/deck.core.js"></script>
+  <script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/goto/deck.goto.js"></script>
+<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/hash/deck.hash.js"></script>
+<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/menu/deck.menu.js"></script>
+<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/navigation/deck.navigation.js"></script>
+<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/scale/deck.scale.js"></script>
+<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/deckjs/extensions/status/deck.status.js"></script>
+<!-- Initialize the deck -->
+  <script>
+  $(function() {
+  	$.deck('.slide');
+  });
+  </script>  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      processEscapes: true
+    }
+  });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script> -->
+<script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/highlighters/highlight.js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<!-- DONE LOADING HIGHLIGHTER JS FILES -->
+ 
+
+</html>
